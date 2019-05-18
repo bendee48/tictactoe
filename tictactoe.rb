@@ -48,7 +48,9 @@ end
 class Game
 
   def check_win?(board, symbol)
-
+    check_horizontal_win?(board, symbol) || 
+    check_vertical_win?(board, symbol) || 
+    check_diagonal_win?(board, symbol)
   end
 
   def check_horizontal_win?(board, symbol)
@@ -58,9 +60,20 @@ class Game
   end
 
   def check_vertical_win?(board, symbol)
-    
+    board.return_board.transpose.any? do |row|
+      row.all? { |sq| sq == symbol }
+    end
+  end
+
+  def check_diagonal_win?(board, symbol)
+    board = board.return_board
+    check1 = board.map.with_index { |row, ind| row[ind] }
+    check2 = board.reverse.map.with_index { |row, ind| row[ind] }
+    [check1, check2].any? do |row|
+      row.all? { |sq| sq == symbol }
+    end
   end
 
 end
 
-Game.new.check_vertical_win?(Board.new, "X")
+Game.new.check_diagonal_win?(Board.new, "X")
