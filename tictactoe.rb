@@ -26,7 +26,7 @@ class Board
     puts @top_row.join("|"), @middle_row.join("|"), @bottom_row.join("|")
   end
 
-  def board
+  def return_board
     [@top_row, @middle_row, @bottom_row]
   end
 
@@ -47,9 +47,20 @@ end
 
 class Game
 
-  def check_win?(board)
+  def check_win?(board, symbol)
+
+  end
+
+  def check_horizontal_win?(board, symbol)
+    board.return_board.any? do |row|
+      row.all? { |sq| sq == symbol }
+    end
+  end
+
+  def check_vertical_win?(board, symbol)
+    
   end
 
 end
 
-p Board.new.board
+Game.new.check_vertical_win?(Board.new, "X")
