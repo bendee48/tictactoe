@@ -90,6 +90,7 @@ class Game
       @player1.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player1.symbol)
+      break if check_draw?(@board)
       puts "Right, player 2, let's go."
       answer = gets.chomp
       move = check_move(answer)
@@ -97,6 +98,7 @@ class Game
       @player2.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player2.symbol)
+      break if check_draw?(@board)
     end
   end
 
@@ -133,6 +135,10 @@ class Game
     [check1, check2].any? do |row|
       row.all? { |sq| sq == symbol }
     end
+  end
+
+  def check_draw?(board)    
+    !board.return_board.flatten.include?("-")
   end
 
 end
