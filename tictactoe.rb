@@ -34,18 +34,67 @@ end
 
 class Player
 
-  def initialize(name, symbol)
+  def initialize(name=nil, symbol=nil)
     @symbol = symbol
     @name = name
   end
 
+  attr_accessor :name, :symbol
+
   def make_move(choice, board)
-    board.update_board(choice, @symbol)
+    board.update_board(choice, self.symbol)
   end
 
 end
 
 class Game
+
+  def initialize
+    @player1 = Player.new
+    @player2 = Player.new
+    @board = Board.new
+  end
+
+  def player_setup
+    puts "Hello. Player 1 please enter your name:"
+    answer = gets.chomp
+    @player1.name = answer
+    puts "Thanks. Now for the most important question. Noughts or Crosses?"
+    answer = gets.chomp
+    if answer == "noughts" 
+      @player1.symbol = "O"
+      @player2.symbol = "X"
+    else
+      @player1.symbol = "X"
+      @player2.symbol = "O"
+    end
+    puts "Now, Player 2, what would you like to be called?"
+    answer = gets.chomp
+    @player2.name = answer
+    puts "Thanks"
+    p @player1, @player2
+  end
+
+  def start_game
+    player_setup
+    player1_win = false
+    player2_win = false
+
+    until player1_win || player2_win
+      puts "Player 1 you're up. Make your move."
+      answer = gets.chomp
+      @player1.make_move(answer, @board)
+      @board.display
+      break if check_win?(@board, @player1.symbol)
+      puts "Right, player 2, let's go."
+      answer = gets.chomp
+      @player2.make_move(answer, @board)
+      @board.display
+      break if check_win?(@board, @player2.symbol)
+      # Testing to end
+      # player2_win = true
+    end
+  end
 
   def check_win?(board, symbol)
     check_horizontal_win?(board, symbol) || 
@@ -76,4 +125,4 @@ class Game
 
 end
 
-Game.new.check_diagonal_win?(Board.new, "X")
+Game.new.start_game
