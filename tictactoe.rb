@@ -49,6 +49,8 @@ end
 
 class Game
 
+  @@moves = []
+
   def initialize
     @player1 = Player.new
     @player2 = Player.new
@@ -80,20 +82,30 @@ class Game
     player1_win = false
     player2_win = false
 
-    until player1_win || player2_win
+    loop do
       puts "Player 1 you're up. Make your move."
       answer = gets.chomp
-      @player1.make_move(answer, @board)
+      move = check_move(answer)
+      @@moves << move
+      @player1.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player1.symbol)
       puts "Right, player 2, let's go."
       answer = gets.chomp
-      @player2.make_move(answer, @board)
+      move = check_move(answer)
+      @@moves << move
+      @player2.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player2.symbol)
-      # Testing to end
-      # player2_win = true
     end
+  end
+
+  def check_move(move)
+    while @@moves.include?(move)
+      puts "That position is already filled. Try again."
+      move = gets.chomp
+    end
+    move
   end
 
   def check_win?(board, symbol)
