@@ -45,56 +45,76 @@ class Player
     board.update_board(choice, self.symbol)
   end
 
+  def symbol_to_name(symbol)
+    converter = {X: "Crosses", O: "Noughts" }
+    converter[symbol.to_sym]
+  end
+
 end
 
 class Game
-
-  @@moves = []
+attr_reader :player1, :player2, :board, :moves
 
   def initialize
     @player1 = Player.new
     @player2 = Player.new
     @board = Board.new
+    @moves = []
   end
 
+  VALID_MOVES = %w(TL TM TR ML MM MR BL BM BR)
+
   def player_setup
-    puts "Hello. Player 1 please enter your name:"
-    answer = gets.chomp
-    @player1.name = answer
-    puts "Thanks. Now for the most important question. Noughts or Crosses?"
-    answer = gets.chomp
-    if answer == "noughts" 
-      @player1.symbol = "O"
-      @player2.symbol = "X"
-    else
-      @player1.symbol = "X"
-      @player2.symbol = "O"
+    puts "Player 1 please enter your name:"
+    answer = gets.chomp.capitalize
+    player1.name = answer
+    puts "Thanks #{player1.name}. Now for the most important question. Noughts or Crosses?"
+    loop do
+      answer = gets.chomp.downcase
+      if answer =~  /\An[ou]\w+[ts]\z/i
+        player1.symbol = "O"
+        player2.symbol = "X"
+        puts "Great, you chose Noughts."
+        break
+      elsif answer =~ /\Acro+s+e?s+\z/i
+        player1.symbol = "X"
+        player2.symbol = "O"
+        puts "You chose Crosses."
+        break
+      else
+        puts "Sorry I'm not sure what that is."
+        puts "Please type 'noughts' or 'crosses'."
+      end
     end
     puts "Now, Player 2, what would you like to be called?"
-    answer = gets.chomp
-    @player2.name = answer
-    puts "Thanks"
-    p @player1, @player2
+    answer = gets.chomp.capitalize
+    player2.name = answer
+    puts "Fair enough. #{player2.name} it is."
+    puts "#{player1.name} chose #{player1.symbol_to_name(player1.symbol)}. "\
+         "So that makes you #{player2.symbol_to_name(player2.symbol)}."
   end
 
   def start_game
     player_setup
+    puts "Right. Let battle commence."
     player1_win = false
     player2_win = false
 
     loop do
-      puts "Player 1 you're up. Make your move."
-      answer = gets.chomp
-      move = check_move(answer)
-      @@moves << move
+      puts "#{@player1.name} you're up. Make your move."
+      answer = gets.chomp.upcase
+      move = check_move_exists(answer)
+      # move = check_wrong_move(move)
+      @moves << move
       @player1.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player1.symbol)
       break if check_draw?(@board)
-      puts "Right, player 2, let's go."
-      answer = gets.chomp
-      move = check_move(answer)
-      @@moves << move
+      puts "Right, #{@player2.name}, let's go."
+      answer = gets.chomp.upcase
+      move = check_move_exists(answer)
+      # move = check_wrong_move(move)
+      @moves << move
       @player2.make_move(move, @board)
       @board.display
       break if check_win?(@board, @player2.symbol)
@@ -102,12 +122,24 @@ class Game
     end
   end
 
-  def check_move(move)
-    while @@moves.include?(move)
+  def check_move_exists(move)
+    while @moves.include?(move)
       puts "That position is already filled. Try again."
-      move = gets.chomp
+      move = gets.chomp.upcase
     end
-    move
+    move.upcase
+  end
+
+  # def check_wrong_move(move)
+  #    until move =~ /\At[lmr]\z|\Am[lmr]\z|\Ab[lmr]\z/i
+  #     puts "Hmm, I'm not sure what that move is."
+  #     move = gets.chomp
+  #    end
+  #    move.upcase 
+  # end
+
+  def move_list
+    puts "This will be the MOVE LIST yeaaah!"
   end
 
   def check_win?(board, symbol)
