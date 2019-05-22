@@ -1,24 +1,23 @@
 class Board
-  @@columns = { L: 0, M: 1, R: 2 }
-
+  
   def initialize
     @top_row = ["-", "-", "-"]
     @middle_row = ["-", "-", "-"]
     @bottom_row = ["-", "-", "-"]
+    @columns = { L: 0, M: 1, R: 2 }
   end
 
-  #test
   attr_reader :top_row, :bottom_row, :middle_row
 
   def update_board(move, player_symbol)
     row, column = move.chars
     case row
     when "T"
-      @top_row[@@columns[column.to_sym]] = player_symbol
+      @top_row[@columns[column.to_sym]] = player_symbol
     when "M"
-      @middle_row[@@columns[column.to_sym]] = player_symbol
+      @middle_row[@columns[column.to_sym]] = player_symbol
     when "B"
-      @bottom_row[@@columns[column.to_sym]] = player_symbol
+      @bottom_row[@columns[column.to_sym]] = player_symbol
     end
   end
 
@@ -33,13 +32,12 @@ class Board
 end
 
 class Player
+  attr_accessor :name, :symbol
 
   def initialize(name=nil, symbol=nil)
     @symbol = symbol
     @name = name
   end
-
-  attr_accessor :name, :symbol
 
   def make_move(choice, board)
     board.update_board(choice, self.symbol)
@@ -53,7 +51,7 @@ class Player
 end
 
 class Game
-attr_reader :player1, :player2, :board, :moves
+  attr_reader :player1, :player2, :board, :moves
 
   def initialize
     @player1 = Player.new
@@ -63,72 +61,79 @@ attr_reader :player1, :player2, :board, :moves
   end
 
   VALID_MOVES = %w(TL TM TR ML MM MR BL BM BR)
+  VALID_SYMBOLS = {"O" => "Noughts", "X" => "Crosses"}
 
-  def player_setup
-    puts "Player 1 please enter your name:"
+  def player_setup(player_number, player)
+    puts "Player #{player_number} please enter your name:"
     answer = gets.chomp.capitalize
-    player1.name = answer
-    puts "Thanks #{player1.name}. Now for the most important question. Noughts or Crosses?"
+    player.name = answer
+    puts "Thanks #{player.name}"
+  end
+
+  def choose_symbol
+    puts "Now #{player1.name}, time for the most important question. Noughts or Crosses? "\
+         "Please type 'O' or 'X' to select:"
     loop do
-      answer = gets.chomp.downcase
-      if answer =~  /\An[ou]\w+[ts]\z/i
-        player1.symbol = "O"
-        player2.symbol = "X"
-        puts "Great, you chose Noughts."
-        break
-      elsif answer =~ /\Acro+s+e?s+\z/i
-        player1.symbol = "X"
-        player2.symbol = "O"
-        puts "You chose Crosses."
+      answer = gets.chomp.upcase
+      valid_symbols = VALID_SYMBOLS.keys
+      if valid_symbols.include?(answer)
+        player1.symbol = answer
+        valid_symbols.delete(answer)
+        player2.symbol = valid_symbols.first
+        puts "Thanks."
         break
       else
         puts "Sorry I'm not sure what that is."
-        puts "Please type 'noughts' or 'crosses'."
+        puts "Please type 'O' or 'X'."
       end
     end
-    puts "Now, Player 2, what would you like to be called?"
-    answer = gets.chomp.capitalize
-    player2.name = answer
-    puts "Fair enough. #{player2.name} it is."
-    puts "#{player1.name} chose #{player1.symbol_to_name(player1.symbol)}. "\
-         "So that makes you #{player2.symbol_to_name(player2.symbol)}."
+    puts "Okay, #{player1.name} chose '#{player1.symbol}', which means "\
+         "#{player2.name}, you're '#{player2.symbol}'."
   end
 
   def start_game
-    player_setup
-    puts "Right. Let battle commence."
-    player1_win = false
-    player2_win = false
+    player_setup("1", player1)
+    player_setup("2", player2)
+    choose_symbol
+    puts "Let battle commence!"
+    main_game_loop
+  end
 
+  def main_game_loop
+    players = [player1, player2].cycle
     loop do
-      puts "#{@player1.name} you're up. Make your move."
-      answer = gets.chomp.upcase
-      move = check_move_exists(answer)
-      # move = check_wrong_move(move)
-      @moves << move
-      @player1.make_move(move, @board)
-      @board.display
-      break if check_win?(@board, @player1.symbol)
-      break if check_draw?(@board)
-      puts "Right, #{@player2.name}, let's go."
-      answer = gets.chomp.upcase
-      move = check_move_exists(answer)
-      # move = check_wrong_move(move)
-      @moves << move
-      @player2.make_move(move, @board)
-      @board.display
-      break if check_win?(@board, @player2.symbol)
-      break if check_draw?(@board)
+      current_player = players.next
+      validated_move = false
+      until validated_move
+        puts "#{current_player.name} (#{current_player.symbol}) you're up. Make your move."
+        move = gets.chomp.upcase
+        validated_move = !move_already_taken?(move) && valid_move?(move)
+        puts "Move already taken" if move_already_taken?(move)
+        puts "Invalid move" if !valid_move?(move)
+      end      
+      moves << move
+      current_player.make_move(move, board)
+      board.display
+      break if check_win?(board, current_player.symbol)
+      break if check_draw?(board)
     end
   end
 
-  def check_move_exists(move)
-    while @moves.include?(move)
-      puts "That position is already filled. Try again."
-      move = gets.chomp.upcase
-    end
-    move.upcase
+  def move_already_taken?(move)
+    moves.include?(move)
   end
+
+  def valid_move?(move)
+    VALID_MOVES.include?(move)
+  end
+
+  # def check_move_exists(move)
+  #   while @moves.include?(move)
+  #     puts "That position is already filled. Try again."
+  #     move = gets.chomp.upcase
+  #   end
+  #   move.upcase
+  # end
 
   # def check_wrong_move(move)
   #    until move =~ /\At[lmr]\z|\Am[lmr]\z|\Ab[lmr]\z/i
