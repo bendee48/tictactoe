@@ -1,5 +1,6 @@
 class Board
-  
+  attr_reader :top_row, :bottom_row, :middle_row, :columns
+
   def initialize
     @top_row = ["-", "-", "-"]
     @middle_row = ["-", "-", "-"]
@@ -7,26 +8,24 @@ class Board
     @columns = { L: 0, M: 1, R: 2 }
   end
 
-  attr_reader :top_row, :bottom_row, :middle_row
-
   def update_board(move, player_symbol)
     row, column = move.chars
     case row
     when "T"
-      @top_row[@columns[column.to_sym]] = player_symbol
+      top_row[columns[column.to_sym]] = player_symbol
     when "M"
-      @middle_row[@columns[column.to_sym]] = player_symbol
+      middle_row[columns[column.to_sym]] = player_symbol
     when "B"
-      @bottom_row[@columns[column.to_sym]] = player_symbol
+      bottom_row[columns[column.to_sym]] = player_symbol
     end
   end
 
   def display
-    puts @top_row.join("|"), @middle_row.join("|"), @bottom_row.join("|")
+    puts top_row.join("|"), middle_row.join("|"), bottom_row.join("|")
   end
 
   def return_board
-    [@top_row, @middle_row, @bottom_row]
+    [top_row, middle_row, bottom_row]
   end
 
 end
@@ -41,11 +40,6 @@ class Player
 
   def make_move(choice, board)
     board.update_board(choice, self.symbol)
-  end
-
-  def symbol_to_name(symbol)
-    converter = {X: "Crosses", O: "Noughts" }
-    converter[symbol.to_sym]
   end
 
 end
@@ -91,7 +85,28 @@ class Game
          "#{player2.name}, you're '#{player2.symbol}'."
   end
 
+  def introduction
+    puts "Welcome to TictacToe."
+    puts "The whirlwind extravaganza of...trying to put 3 things in a row"
+    puts "If you would like to see how to play, press 'R' or press Return to continue."
+    answer = gets.chomp.downcase
+    rules if answer == "r"
+  end
+
+  def rules
+    puts "Players take it in turns to place either a cross or a nought on the board."
+    puts "Try to get 3 in a row to win."
+    puts "The board is split into 3 rows of top, middle and bottom."
+    puts "...and 3 columns of left, middle and right."
+    puts "Use the first letter's of a row and column to make your move eg. TL (Top Left)"
+    puts "Press 'L' to see the full move list, or press Return to continue."
+    answer = gets.chomp.downcase
+    p VALID_MOVES if answer == "l"
+  end
+
   def start_game
+    introduction
+    puts "Right, let's get started."
     player_setup("1", player1)
     player_setup("2", player2)
     choose_symbol
@@ -102,21 +117,32 @@ class Game
   def main_game_loop
     players = [player1, player2].cycle
     loop do
-      current_player = players.next
-      validated_move = false
-      until validated_move
-        puts "#{current_player.name} (#{current_player.symbol}) you're up. Make your move."
-        move = gets.chomp.upcase
-        validated_move = !move_already_taken?(move) && valid_move?(move)
-        puts "Move already taken" if move_already_taken?(move)
-        puts "Invalid move" if !valid_move?(move)
-      end      
+      current_player = players.next      
+      move = validate_move(current_player)
       moves << move
       current_player.make_move(move, board)
       board.display
-      break if check_win?(board, current_player.symbol)
-      break if check_draw?(board)
+      if check_win?(board, current_player.symbol)
+        winner_winner_chicken_dinner(current_player)
+        break
+      end
+      if check_draw?(board)
+        draw
+        break
+      end
     end
+  end
+
+  def validate_move(current_player) 
+    validated_move = false
+    until validated_move
+      puts "#{current_player.name} (#{current_player.symbol}) you're up. Make your move."
+      move = gets.chomp.upcase
+      validated_move = !move_already_taken?(move) && valid_move?(move)
+      puts "Move already taken" if move_already_taken?(move)
+      puts "Invalid move" if !valid_move?(move)
+    end   
+    move
   end
 
   def move_already_taken?(move)
@@ -126,22 +152,6 @@ class Game
   def valid_move?(move)
     VALID_MOVES.include?(move)
   end
-
-  # def check_move_exists(move)
-  #   while @moves.include?(move)
-  #     puts "That position is already filled. Try again."
-  #     move = gets.chomp.upcase
-  #   end
-  #   move.upcase
-  # end
-
-  # def check_wrong_move(move)
-  #    until move =~ /\At[lmr]\z|\Am[lmr]\z|\Ab[lmr]\z/i
-  #     puts "Hmm, I'm not sure what that move is."
-  #     move = gets.chomp
-  #    end
-  #    move.upcase 
-  # end
 
   def move_list
     puts "This will be the MOVE LIST yeaaah!"
@@ -176,6 +186,15 @@ class Game
 
   def check_draw?(board)    
     !board.return_board.flatten.include?("-")
+  end
+
+  def winner_winner_chicken_dinner(player)
+    puts "Today is the day you'll recount to your grandchildren a thousand times."
+    puts "You, #{player.name}, are a winner!!!"
+  end
+
+  def draw
+    puts "What can I say, you've wasted all our time."
   end
 
 end
