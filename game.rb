@@ -48,7 +48,7 @@ class Game
   end
 
   def start_game
-    introduction(VALID_MOVES)
+    introduction(VALID_MOVES, self)
     puts "Right, let's get started."
     player_setup("1", player1)
     player_setup("2", player2)
@@ -78,14 +78,26 @@ class Game
 
   def validate_move(current_player) 
     validated_move = false
+    tries = 0
     until validated_move
       puts "#{current_player.name} (#{current_player.symbol}) you're up. Make your move."
       move = gets.chomp.upcase
       validated_move = !move_already_taken?(move) && valid_move?(move)
-      puts "Move already taken" if move_already_taken?(move)
-      puts "Invalid move" if !valid_move?(move)
+      (puts "Move already taken"; tries += 1) if move_already_taken?(move) 
+      (puts "Invalid move"; tries += 1) if !valid_move?(move)
+      (help; tries = 0) if tries > 3
     end   
     move
+  end
+
+  def help
+    puts "Press 'M' to see the move list again or 'B' to see the board? Or Press Return to try again."
+    answer = gets.chomp.downcase
+    if answer == "m"
+      move_list
+    elsif answer == "b"
+      board.display
+    end
   end
 
   def move_already_taken?(move)
@@ -97,7 +109,7 @@ class Game
   end
 
   def move_list
-    puts "This will be the MOVE LIST yeaaah!"
+    p VALID_MOVES
   end
 
   def check_win?(board, symbol)
