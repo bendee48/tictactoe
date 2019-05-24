@@ -1,5 +1,6 @@
 require 'test/unit'
-require './tictactoe'
+require './tictactoe.rb'
+
 
 class TicTacToeTest < Test::Unit::TestCase
 

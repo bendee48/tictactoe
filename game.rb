@@ -16,10 +16,8 @@ class Game
     loop do
       puts "Player #{player_number} please enter your name:"
       answer = gets.chomp.capitalize
-      if answer.strip.empty?
-        puts "Come now, I need to call you something!"
-        redo 
-      end
+      (puts "Come now, I need to call you something!"; redo) if answer.strip.empty?
+      (puts "Your name needs to be at least 3 characters."; redo) if answer.size < 3
       player.name = answer
       puts "Thanks #{player.name}"  
       break  
@@ -44,16 +42,16 @@ class Game
       end
     end
     puts "Okay, #{player1.name} chose '#{player1.symbol}', which means "\
-         "#{player2.name}, you're '#{player2.symbol}'."
+         "#{player2.name}, you're '#{player2.symbol}'."; sleepy
   end
 
   def start_game
     introduction(VALID_MOVES, self)
-    puts "Right, let's get started."
+    puts "Right, let's get started."; sleepy
     player_setup("1", player1)
     player_setup("2", player2)
     choose_symbol
-    puts "Let battle commence!"
+    puts "Let battle commence!"; sleepy
     main_game_loop
   end
 
