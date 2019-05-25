@@ -89,7 +89,7 @@ class Game
   end
 
   def help
-    puts "Press 'M' to see the move list again or 'B' to see the board? Or Press Return to try again."
+    puts "Enter 'M' to see the move list again or 'B' to see the board? Or press Return to try again."
     answer = gets.chomp.downcase
     if answer == "m"
       move_list
