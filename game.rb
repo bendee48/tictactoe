@@ -1,3 +1,5 @@
+require './textable'
+
 class Game
   include Textable
   attr_reader :player1, :player2, :board, :moves
